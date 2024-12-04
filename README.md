@@ -19,5 +19,3 @@ To interact with this contract, you will need:
 ### Steps to Deploy the Contract
 1. Clone this repository.
 2. Install dependencies:
-   ```bash
-   npm install
