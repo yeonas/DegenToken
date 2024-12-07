@@ -1,21 +1,60 @@
-# Degen Gaming Token (DGT)
+# DegenToken Smart Contract
 
 ## Overview
-The **Degen Gaming Token (DGT)** is a custom ERC-20 token built using Solidity, designed specifically for gaming applications. It is powered by OpenZeppelin's libraries for security and ease of use. The token provides functionalities such as minting, redeeming, and burning tokens, making it ideal for use in gaming ecosystems.
+
+The `DegenToken` contract is an ERC20 token integrated with a simple in-game item redemption system. Players can mint tokens, transfer tokens, burn tokens, and redeem tokens for in-game items. The contract is designed to work within a gaming ecosystem, where tokens serve as the currency for acquiring various game items. The system supports a list of pre-defined game items with different costs and allows players to redeem tokens for these items.
 
 ## Features
-- **Minting**: The contract owner can mint new tokens to specified addresses.
-- **Redeeming**: Users can redeem tokens, which involves burning tokens from their balance and triggering an event.
-- **Burning**: Users can voluntarily burn tokens from their own balance.
-- **Ownership**: Managed through OpenZeppelin's `Ownable` module.
 
-## Prerequisites
-To interact with this contract, you will need:
-- A working knowledge of Solidity and Ethereum smart contracts.
-- Node.js installed on your system.
-- Truffle, Hardhat, or similar development tools for smart contracts.
+- **ERC20 Token**: Implements the ERC20 standard for fungible tokens.
+- **Minting**: Only the contract owner can mint new tokens.
+- **Token Transfers**: Players can transfer tokens to other players.
+- **Burning**: Players can burn their tokens to reduce their balance.
+- **Item Redemption**: Players can redeem their tokens for in-game items.
+- **Game Items**: The contract comes with a predefined list of game items with unique IDs, names, and costs.
+- **Item Ownership**: Players' redeemed items are tracked and stored privately for each address.
 
-## Deployment
-### Steps to Deploy the Contract
-1. Clone this repository.
-2. Install dependencies:
+## Contract Details
+
+### Token Name: `Degen`
+### Token Symbol: `DGN`
+### Decimals: 0 (no fractional tokens)
+
+### Predefined Game Items:
+- **AK47**: Cost 20 Degen Tokens
+- **Vandal**: Cost 30 Degen Tokens
+- **PSG1**: Cost 200 Degen Tokens
+
+## Functions
+
+### `mint(address to, uint256 amount)`
+- Mints new tokens and assigns them to the `to` address.
+- **Access Control**: Only the contract owner can mint new tokens.
+
+### `decimals()`
+- Returns the number of decimal places for the token (0 in this case).
+
+### `getBalance()`
+- Returns the balance of Degen Tokens for the caller (msg.sender).
+
+### `burnTokens(uint256 amount)`
+- Burns a specific amount of tokens from the caller's balance.
+
+### `transferTokens(address recipient, uint256 amount)`
+- Transfers a specified amount of tokens to the recipient address.
+- Approves the transaction before transferring the tokens.
+
+### `redeem(uint256 itemId)`
+- Redeems tokens for a specific in-game item.
+- The caller must have enough tokens to cover the cost of the item.
+
+### `getGameItems()`
+- Returns an array of all available game items.
+
+### `getOwnedItems()`
+- Returns an array of items owned by the caller (msg.sender).
+
+## Events
+
+### `ItemRedeemed(address indexed redeemer, uint256 itemId, string itemName, uint256 itemCost)`
+- Emitted when a player successfully redeems tokens for an item.
