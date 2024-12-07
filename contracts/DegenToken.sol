@@ -4,32 +4,94 @@ pragma solidity ^0.8.18;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract DegenGamingToken is ERC20, Ownable {
-    // Constructor to initialize the token
-    constructor(address initialOwner) ERC20("Degen Gaming Token", "DGT") Ownable(initialOwner) {
-        transferOwnership(initialOwner);
+contract DegenToken is ERC20, Ownable {
+    // Structure to represent an in-game item
+    struct GameItem {
+        uint256 itemId;
+        string itemName;
+        uint256 itemCost;
     }
 
-    // Minting function: Only owner can mint tokens
-    function mint(address to, uint256 amount) external onlyOwner {
+    GameItem[] public gameItems; // List of in-game items
+
+    // Mapping to store owned items for each address
+    mapping(address => GameItem[]) private ownedItems;
+
+    constructor() ERC20("Degen", "DGN") Ownable(msg.sender) {
+        // Initialize some game items with different values
+        gameItems.push(GameItem(1, "AK47", 20));
+        gameItems.push(GameItem(2, "Vandal", 30));
+        gameItems.push(GameItem(3, "PSG1", 200));
+    }
+
+    function mint(address to, uint256 amount) public onlyOwner {
         _mint(to, amount);
     }
 
-    // Redeeming tokens (logic for redeeming can vary based on game logic)
-    // Here we simply emit an event to signify a redemption.
-    event TokensRedeemed(address indexed player, uint256 amount);
-
-    function redeem(uint256 amount) external {
-        require(balanceOf(msg.sender) >= amount, "Insufficient balance to redeem.");
-        _burn(msg.sender, amount);
-        emit TokensRedeemed(msg.sender, amount);
-        // Additional logic for redeeming items can be added here.
+    function decimals() public pure override returns (uint8) {
+        return 0; // No fractional tokens
     }
 
-    // Burning tokens: Any user can burn their own tokens
-    function burn(uint256 amount) external {
-        _burn(msg.sender, amount);
+    function getBalance() external view returns (uint256) {
+        return this.balanceOf(msg.sender);
     }
 
-    // Checking token balance is already provided by ERC20 with balanceOf(address).
+    function burnTokens(uint256 amount) public {
+        require(
+            balanceOf(_msgSender()) >= amount,
+            "You do not have enough Degen Tokens"
+        );
+        _burn(_msgSender(), amount);
+    }
+
+    function transferTokens(address recipient, uint256 amount) external {
+        require(
+            balanceOf(_msgSender()) >= amount,
+            "Transfer failed: insufficient balance"
+        );
+        approve(msg.sender, amount);
+        transferFrom(msg.sender, recipient, amount);
+    }
+
+    // Redeem tokens for a specific game item
+    function redeem(uint256 itemId) external {
+        require(itemId > 0 && itemId <= gameItems.length, "Invalid item ID");
+        GameItem memory item = gameItems[itemId - 1]; // Adjust index (1-based ID)
+
+        require(
+            balanceOf(msg.sender) >= item.itemCost,
+            "Insufficient balance to redeem"
+        );
+
+        _burn(msg.sender, item.itemCost);
+
+        // Add the item to the user's owned items
+        ownedItems[msg.sender].push(item);
+
+        // Emit an event for the redemption
+        emit ItemRedeemed(
+            msg.sender,
+            item.itemId,
+            item.itemName,
+            item.itemCost
+        );
+    }
+
+    // Fetch all available game items
+    function getGameItems() external view returns (GameItem[] memory) {
+        return gameItems;
+    }
+
+    // Fetch owned items for the caller
+    function getOwnedItems() external view returns (GameItem[] memory) {
+        return ownedItems[msg.sender];
+    }
+
+    // Event to log redemption
+    event ItemRedeemed(
+        address indexed redeemer,
+        uint256 itemId,
+        string itemName,
+        uint256 itemCost
+    );
 }
